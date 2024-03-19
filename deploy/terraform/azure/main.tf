@@ -4,7 +4,7 @@ terraform {
 
   required_providers {
     azurerm = {
-      source = "hashicorp/azurerm"
+      source  = "hashicorp/azurerm"
       version = "3.10.0"
     }
   }
@@ -16,13 +16,16 @@ provider "azurerm" {
 
 # This generates a random pet name that will be used to name your resource group.
 resource "random_pet" "rg-name" {
-  prefix    = var.resource_group_name_prefix
+  prefix = var.resource_group_name_prefix
 }
 
 # Create a resource group
 resource "azurerm_resource_group" "rg" {
-  name      = random_pet.rg-name.id
-  location  = var.resource_group_location
+  name     = random_pet.rg-name.id
+  location = var.resource_group_location
+  tags = {
+    yor_trace = "7b8dd983-0000-4931-a5b3-ae442a24d192"
+  }
 }
 
 # Create virtual network
@@ -31,6 +34,9 @@ resource "azurerm_virtual_network" "ctm_network" {
   address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
+  tags = {
+    yor_trace = "35af55f8-c487-491f-ac60-7dae9bee7818"
+  }
 }
 
 # Create subnet
@@ -47,6 +53,9 @@ resource "azurerm_public_ip" "ctm_public_ip" {
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   allocation_method   = "Dynamic"
+  tags = {
+    yor_trace = "48e95fe5-9af4-42e4-acb6-55d2a42ce954"
+  }
 }
 
 # Create Network Security Group and rule
@@ -78,6 +87,9 @@ resource "azurerm_network_security_group" "ctm_network_sg" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
+  tags = {
+    yor_trace = "6d50d478-ec1e-4bd9-afb5-405d08c7c0e8"
+  }
 }
 
 # Create network interface
@@ -91,6 +103,9 @@ resource "azurerm_network_interface" "ctmnic" {
     subnet_id                     = azurerm_subnet.ctm_subnet.id
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.ctm_public_ip.id
+  }
+  tags = {
+    yor_trace = "47f41170-9c0a-4666-a846-b1840eae7a25"
   }
 }
 
@@ -117,12 +132,15 @@ resource "azurerm_storage_account" "ctm_storage_account" {
   resource_group_name      = azurerm_resource_group.rg.name
   account_tier             = "Standard"
   account_replication_type = "LRS"
+  tags = {
+    yor_trace = "b0fcb9bd-443e-4ad0-ad8a-be6be2399597"
+  }
 }
 
 # Create (and display) an SSH key
 resource "tls_private_key" "ctm_ssh_key" {
   algorithm = "RSA"
-  rsa_bits = 4096
+  rsa_bits  = 4096
 }
 
 # Create virtual machine for CipherTrust Manager (CTM).
@@ -147,9 +165,9 @@ resource "azurerm_linux_virtual_machine" "ctm_vm" {
   }
 
   plan {
-      name = "ciphertrust_manager"
-      product = "cm_k170v"
-      publisher = "thalesdiscplusainc1596561677238"
+    name      = "ciphertrust_manager"
+    product   = "cm_k170v"
+    publisher = "thalesdiscplusainc1596561677238"
   }
 
   computer_name                   = "serverVM"
@@ -163,6 +181,9 @@ resource "azurerm_linux_virtual_machine" "ctm_vm" {
 
   boot_diagnostics {
     storage_account_uri = azurerm_storage_account.ctm_storage_account.primary_blob_endpoint
+  }
+  tags = {
+    yor_trace = "9afbfe97-bb89-4e39-b280-c13707da34c7"
   }
 }
 

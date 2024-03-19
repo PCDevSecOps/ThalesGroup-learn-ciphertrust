@@ -40,7 +40,7 @@ resource "google_compute_firewall" "ctm-https-firewall" {
   }
 
   source_ranges = ["0.0.0.0/0"]
-  source_tags = ["web"]
+  source_tags   = ["web"]
 }
 
 # Allow port 22 (ssh) access to CipherTrust Manager Instance
@@ -52,21 +52,21 @@ resource "google_compute_firewall" "ctm-ssh-firewall" {
     protocol = "tcp"
     ports    = ["22"]
   }
-  
+
   source_ranges = ["0.0.0.0/0"]
-  source_tags = ["ssh"]
+  source_tags   = ["ssh"]
 }
 
 # Create (and display) an SSH key. Required to setup CipherTrust Manager Instance.
 resource "tls_private_key" "ctm_ssh_key" {
   algorithm = "RSA"
-  rsa_bits = 4096
+  rsa_bits  = 4096
 }
 
 
 # Create a public static IP address for CipherTrust Manager Instance
 resource "google_compute_address" "public_static_ip" {
-  name    = "ipv4-address"
+  name = "ipv4-address"
 }
 
 # Create a CipherTrust Manager Instance
@@ -77,7 +77,7 @@ resource "google_compute_instance" "default" {
   zone = var.gcp_zone
 
   network_interface {
-    network = google_compute_network.ctm_network.name
+    network    = google_compute_network.ctm_network.name
     subnetwork = google_compute_subnetwork.ctm_subnetwork.name
     access_config {
       nat_ip = google_compute_address.public_static_ip.address
@@ -89,5 +89,8 @@ resource "google_compute_instance" "default" {
     initialize_params {
       image = "projects/thales-cpl-public/global/images/k170v-7157-20220421155738"
     }
+  }
+  labels = {
+    yor_trace = "9df16491-7dca-4e44-9b3d-1092f7523127"
   }
 }
